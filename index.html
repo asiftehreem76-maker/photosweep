@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PhotoSweep — Swipe to Clean Your Photos</title>
+    <meta name="description" content="The fastest way to declutter your photo library. Swipe left to bin, right to keep. 100% on-device, no ads, completely free.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0D0E13;
+            --surface: #16181F;
+            --surface-hi: #1E2129;
+            --accent: #B9A8FF;
+            --keep: #4ADE9E;
+            --bin: #FF6B5E;
+            --text: #F4F4F6;
+            --text-sec: #9A9DA8;
+            --stroke: rgba(255,255,255,0.07);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ── NAV ── */
+        nav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            background: rgba(13,14,19,0.8);
+            border-bottom: 1px solid var(--stroke);
+        }
+        nav .inner {
+            max-width: 1080px; margin: 0 auto;
+            padding: 14px 24px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .nav-logo {
+            font-size: 18px; font-weight: 800;
+            background: linear-gradient(135deg, var(--accent), var(--keep));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .nav-links { display: flex; gap: 28px; list-style: none; }
+        .nav-links a {
+            color: var(--text-sec); text-decoration: none;
+            font-size: 14px; font-weight: 500;
+            transition: color 0.2s;
+        }
+        .nav-links a:hover { color: var(--text); }
+
+        /* ── HERO ── */
+        .hero {
+            padding: 140px 24px 80px;
+            text-align: center;
+            position: relative; overflow: hidden;
+        }
+        .hero::before {
+            content: '';
+            position: absolute; top: -200px; left: 50%; transform: translateX(-50%);
+            width: 600px; height: 600px;
+            background: radial-gradient(circle, rgba(185,168,255,0.08) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .hero-badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: var(--surface); border: 1px solid var(--stroke);
+            padding: 6px 16px; border-radius: 100px;
+            font-size: 13px; font-weight: 600; color: var(--accent);
+            margin-bottom: 28px;
+        }
+        .hero-badge span { font-size: 14px; }
+        .hero h1 {
+            font-size: clamp(40px, 8vw, 72px);
+            font-weight: 900; line-height: 1.05;
+            letter-spacing: -2px;
+            margin-bottom: 20px;
+        }
+        .hero h1 .grad {
+            background: linear-gradient(135deg, var(--accent) 0%, var(--keep) 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .hero p {
+            color: var(--text-sec); font-size: 18px;
+            max-width: 520px; margin: 0 auto 36px;
+            line-height: 1.7;
+        }
+        .hero-cta {
+            display: inline-flex; align-items: center; gap: 10px;
+            background: var(--accent); color: #0D0E13;
+            padding: 14px 32px; border-radius: 16px;
+            font-weight: 700; font-size: 16px;
+            text-decoration: none;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .hero-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(185,168,255,0.3);
+        }
+        .hero-cta svg { width: 20px; height: 20px; }
+
+        /* ── HOW IT WORKS ── */
+        .how {
+            padding: 80px 24px;
+            max-width: 900px; margin: 0 auto;
+        }
+        .section-label {
+            font-size: 13px; font-weight: 700; color: var(--accent);
+            text-transform: uppercase; letter-spacing: 2px;
+            margin-bottom: 12px;
+        }
+        .section-title {
+            font-size: clamp(28px, 5vw, 40px);
+            font-weight: 800; letter-spacing: -1px;
+            margin-bottom: 48px;
+        }
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+        }
+        .step {
+            background: var(--surface);
+            border: 1px solid var(--stroke);
+            border-radius: 24px;
+            padding: 28px 24px;
+            text-align: center;
+        }
+        .step-icon {
+            width: 56px; height: 56px;
+            border-radius: 16px;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 16px;
+            font-size: 26px;
+        }
+        .step:nth-child(1) .step-icon { background: rgba(185,168,255,0.12); }
+        .step:nth-child(2) .step-icon { background: rgba(255,107,94,0.12); }
+        .step:nth-child(3) .step-icon { background: rgba(74,222,158,0.12); }
+        .step h3 {
+            font-size: 17px; font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .step p { color: var(--text-sec); font-size: 14px; line-height: 1.6; }
+
+        /* ── FEATURES ── */
+        .features {
+            padding: 80px 24px;
+            max-width: 900px; margin: 0 auto;
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+        }
+        .feat {
+            background: var(--surface);
+            border: 1px solid var(--stroke);
+            border-radius: 20px;
+            padding: 24px;
+            display: flex; gap: 14px; align-items: flex-start;
+        }
+        .feat-dot {
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            margin-top: 6px; flex-shrink: 0;
+        }
+        .feat h4 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+        .feat p { color: var(--text-sec); font-size: 13px; line-height: 1.5; }
+
+        /* ── PRIVACY ── */
+        .privacy {
+            padding: 80px 24px;
+            max-width: 760px; margin: 0 auto;
+        }
+        .privacy-hero {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+        .privacy-badge {
+            display: inline-block;
+            background: rgba(74,222,158,0.1);
+            color: var(--keep);
+            font-size: 13px; font-weight: 700;
+            padding: 6px 16px; border-radius: 100px;
+            margin-bottom: 16px;
+        }
+        .privacy-card {
+            background: var(--surface);
+            border: 1px solid var(--stroke);
+            border-radius: 24px;
+            padding: 36px 32px;
+            margin-bottom: 16px;
+        }
+        .privacy-card h3 {
+            font-size: 18px; font-weight: 700;
+            margin-bottom: 12px;
+        }
+        .privacy-card p {
+            color: var(--text-sec); font-size: 15px;
+            line-height: 1.7; margin-bottom: 12px;
+        }
+        .privacy-card p:last-child { margin-bottom: 0; }
+        .privacy-card ul {
+            list-style: none; padding: 0; margin: 0 0 12px;
+        }
+        .privacy-card ul li {
+            color: var(--text-sec); font-size: 14px;
+            padding: 6px 0 6px 20px;
+            position: relative;
+        }
+        .privacy-card ul li::before {
+            content: ''; position: absolute; left: 0; top: 14px;
+            width: 6px; height: 6px; border-radius: 50%;
+            background: var(--accent);
+        }
+        .effective-date {
+            text-align: center;
+            color: var(--text-sec); font-size: 13px;
+            margin-top: 24px;
+        }
+
+        /* ── CONTACT / FOOTER ── */
+        .footer {
+            border-top: 1px solid var(--stroke);
+            padding: 40px 24px;
+            text-align: center;
+        }
+        .footer-inner {
+            max-width: 600px; margin: 0 auto;
+        }
+        .footer h3 {
+            font-size: 20px; font-weight: 800;
+            margin-bottom: 8px;
+        }
+        .footer p { color: var(--text-sec); font-size: 14px; margin-bottom: 20px; }
+        .footer a.email {
+            color: var(--accent); text-decoration: none;
+            font-weight: 600; font-size: 15px;
+        }
+        .footer a.email:hover { text-decoration: underline; }
+        .footer-bottom {
+            margin-top: 32px; padding-top: 20px;
+            border-top: 1px solid var(--stroke);
+            color: var(--text-sec); font-size: 12px;
+        }
+        .footer-links { display: flex; gap: 24px; justify-content: center; margin-top: 10px; }
+        .footer-links a { color: var(--text-sec); text-decoration: none; font-size: 12px; }
+        .footer-links a:hover { color: var(--text); }
+
+        /* ── MOBILE ── */
+        @media (max-width: 600px) {
+            .nav-links { display: none; }
+            .hero { padding: 120px 20px 60px; }
+            .hero p { font-size: 16px; }
+            .steps { grid-template-columns: 1fr; }
+            .feature-grid { grid-template-columns: 1fr; }
+            .privacy-card { padding: 24px 20px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+    <div class="inner">
+        <div class="nav-logo">PhotoSweep</div>
+        <ul class="nav-links">
+            <li><a href="#how">How It Works</a></li>
+            <li><a href="#features">Features</a></li>
+            <li><a href="#privacy">Privacy</a></li>
+            <li><a href="#contact">Contact</a></li>
+        </ul>
+    </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+    <div class="hero-badge">
+        <span>🧹</span> Free · No Ads · 100% On-Device
+    </div>
+    <h1>Swipe away the<br><span class="grad">clutter</span></h1>
+    <p>Your camera roll doesn't need 12,000 photos. Swipe left to bin, right to keep — reclaim your storage in minutes.</p>
+    <a href="https://apps.apple.com/app/photosweep" class="hero-cta">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5C17.88 20.74 17 21.95 15.66 21.97C14.32 21.99 13.89 21.18 12.37 21.18C10.84 21.18 10.37 21.95 9.1 21.99C7.79 22.03 6.8 20.68 5.96 19.47C4.25 16.94 2.94 12.33 4.7 9.29C5.57 7.78 7.13 6.81 8.82 6.79C10.1 6.77 11.32 7.65 12.11 7.65C12.89 7.65 14.37 6.58 15.92 6.75C16.57 6.78 18.39 7.02 19.56 8.72C19.47 8.78 17.39 9.97 17.41 12.5C17.44 15.53 20.06 16.53 20.09 16.54C20.07 16.6 19.67 18.02 18.71 19.5ZM13 3.5C13.73 2.67 14.94 2.04 15.94 2C16.07 3.17 15.6 4.35 14.9 5.19C14.21 6.04 13.07 6.7 11.95 6.61C11.8 5.46 12.36 4.26 13 3.5Z"/></svg>
+        Download on the App Store
+    </a>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how" id="how">
+    <div class="section-label">How It Works</div>
+    <h2 class="section-title">Three gestures. That's it.</h2>
+    <div class="steps">
+        <div class="step">
+            <div class="step-icon">👆</div>
+            <h3>Pick a Deck</h3>
+            <p>Quick sweep everything, or jump into Screenshots, Videos, or any specific month.</p>
+        </div>
+        <div class="step">
+            <div class="step-icon">👈</div>
+            <h3>Swipe to Decide</h3>
+            <p>Left to bin, right to keep. Each card shows the photo full-size with date and file size.</p>
+        </div>
+        <div class="step">
+            <div class="step-icon">🗑️</div>
+            <h3>Review & Delete</h3>
+            <p>Check your bin, undo mistakes, then delete in one tap. iOS confirms before removing anything.</p>
+        </div>
+    </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features" id="features">
+    <div class="section-label">Features</div>
+    <h2 class="section-title">Everything you need,<br>nothing you don't.</h2>
+    <div class="feature-grid">
+        <div class="feat">
+            <div class="feat-dot" style="background: var(--accent)"></div>
+            <div>
+                <h4>Smart Decks</h4>
+                <p>Quick Sweep, Screenshots, Videos, or pick any month. Attack clutter your way.</p>
+            </div>
+        </div>
+        <div class="feat">
+            <div class="feat-dot" style="background: var(--keep)"></div>
+            <div>
+                <h4>Inline Video</h4>
+                <p>Videos play right on the card. No need to leave the sweep to review them.</p>
+            </div>
+        </div>
+        <div class="feat">
+            <div class="feat-dot" style="background: var(--bin)"></div>
+            <div>
+                <h4>Undo Anytime</h4>
+                <p>Made a mistake? One tap to bring any photo back from the bin instantly.</p>
+            </div>
+        </div>
+        <div class="feat">
+            <div class="feat-dot" style="background: var(--accent)"></div>
+            <div>
+                <h4>Session Stats</h4>
+                <p>See how many you kept, binned, and exactly how much storage you're freeing.</p>
+            </div>
+        </div>
+        <div class="feat">
+            <div class="feat-dot" style="background: var(--keep)"></div>
+            <div>
+                <h4>Safe Deletion</h4>
+                <p>Review your bin before deleting. iOS shows its own confirmation — nothing sneaky.</p>
+            </div>
+        </div>
+        <div class="feat">
+            <div class="feat-dot" style="background: var(--bin)"></div>
+            <div>
+                <h4>Progress Tracking</h4>
+                <p>See which months you've finished and track total storage freed over time.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- PRIVACY POLICY -->
+<section class="privacy" id="privacy">
+    <div class="privacy-hero">
+        <div class="privacy-badge">🔒 100% On-Device</div>
+        <div class="section-label">Privacy Policy</div>
+        <h2 class="section-title">Your photos stay yours.</h2>
+    </div>
+
+    <div class="privacy-card">
+        <h3>Data We Collect</h3>
+        <p><strong style="color: var(--keep);">None.</strong> PhotoSweep does not collect, store, transmit, or share any personal data. There are no accounts, no analytics, no tracking, and no ads.</p>
+    </div>
+
+    <div class="privacy-card">
+        <h3>Photo Library Access</h3>
+        <p>PhotoSweep requests access to your Photo Library to display your photos and videos for review. This access is used solely to:</p>
+        <ul>
+            <li>Display photos and videos for you to swipe through</li>
+            <li>Move items you choose to bin into the iOS deletion queue</li>
+            <li>Show file sizes so you can see how much storage you'll free</li>
+        </ul>
+        <p>Your photos never leave your device. PhotoSweep does not upload, copy, or transmit any images or videos anywhere.</p>
+    </div>
+
+    <div class="privacy-card">
+        <h3>Local Storage</h3>
+        <p>PhotoSweep stores a small amount of data on your device using UserDefaults:</p>
+        <ul>
+            <li>IDs of photos you've already reviewed (so you don't see them again)</li>
+            <li>Lifetime stats (total freed storage, deleted count)</li>
+        </ul>
+        <p>This data stays on your device and is never transmitted. You can reset it anytime from within the app.</p>
+    </div>
+
+    <div class="privacy-card">
+        <h3>Third-Party Services</h3>
+        <p>PhotoSweep uses no third-party SDKs, analytics tools, crash reporters, or ad networks. There is zero network activity.</p>
+    </div>
+
+    <div class="privacy-card">
+        <h3>Children's Privacy</h3>
+        <p>PhotoSweep does not collect data from anyone, including children under 13. The app is safe for all ages.</p>
+    </div>
+
+    <div class="privacy-card">
+        <h3>Changes</h3>
+        <p>If this policy is updated, the revised version will be posted at this URL with a new effective date.</p>
+    </div>
+
+    <p class="effective-date">Effective June 23, 2026</p>
+</section>
+
+<!-- FOOTER / CONTACT -->
+<footer class="footer" id="contact">
+    <div class="footer-inner">
+        <h3>Get in Touch</h3>
+        <p>Questions, feedback, or feature requests — we'd love to hear from you.</p>
+        <a href="mailto:asiftehreem76@gmail.com" class="email">asiftehreem76@gmail.com</a>
+        <div class="footer-bottom">
+            <p>&copy; 2026 PhotoSweep. All rights reserved.</p>
+            <div class="footer-links">
+                <a href="#privacy">Privacy Policy</a>
+                <a href="mailto:asiftehreem76@gmail.com">Support</a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>
